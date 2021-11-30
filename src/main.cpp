@@ -4,13 +4,12 @@
 #include "sunset.h"
 
 #include <Arduino.h>
-#include <ArduinoSTL.h>
 #include <Servo.h>
 #include <Wire.h>
 
-
 struct Color
 {
+  Color() {}
   Color(uint8_t _r, uint8_t _g, uint8_t _b)
   : r(_r)
   , g(_g)
@@ -19,7 +18,7 @@ struct Color
   uint8_t r;
   uint8_t g;
   uint8_t b;
-  uint32_t get_color()
+  uint32_t get_color() const
   {
     return Adafruit_NeoPixel::Color(r, g, b);
   }
@@ -27,13 +26,14 @@ struct Color
 
 struct Point
 {
-  Point(uint32_t _time, uint16_t _color)
+  Point() {}
+  Point(uint32_t _time, Color _color)
   : time(_time)
   , color(_color)
   {}
   uint32_t time;
-  uint16_t color;
-}
+  Color color;
+};
 
 const double m_latitude = 51.1078852;
 const double m_longitude = 17.0385376;
@@ -52,11 +52,13 @@ const uint8_t m_max_servo_pos = 180;
 
 const uint8_t m_min_in_h = 60;
 
-const Color m_sun_start = Color(0, 0, 0);
-const Color m_sun_color = Color(255, 255, 51);
-const Color m_sun_low_color = Color(242, 59, 28);
+const Color m_sun_night = Color(0, 0, 0);
+const Color m_sun_low = Color(242, 59, 14);
+const Color m_sun_noon = Color(255, 255, 25);
 
 const Color m_sky_blue = Color(64, 166, 255);
+
+const uint8_t n = 5;
 
 RTC_DS1307 m_rtc; ///< DS1307 RTC
 SunSet sun;
@@ -81,7 +83,7 @@ void print_time(DateTime time)
   Serial.println(time.second(), DEC);
 }
 
-void calculate_sunrise_sunset(uint16_t& sunrise, uint16_t& sunset, uint16_t& sunrise_civil, uint16_t& sunset_civil)
+void calculate_sunrise_sunset(uint16_t& sunrise, uint16_t& sunset, uint16_t& sunrise_civil, uint16_t& sunset_civil, Point* sun_color_time)
 {
   sunrise = static_cast<uint16_t>(sun.calcSunrise());
   sunset = static_cast<uint16_t>(sun.calcSunset());
@@ -95,6 +97,21 @@ void calculate_sunrise_sunset(uint16_t& sunrise, uint16_t& sunset, uint16_t& sun
   print_time(calculate_from_minutes(sunset));
   Serial.print("Sunset civil: ");
   print_time(calculate_from_minutes(sunset_civil));
+
+  Serial.print("middle: ");
+  uint16_t day_middle = ((sunset - sunrise) / 2) + sunrise;
+  print_time(calculate_from_minutes(day_middle));
+
+  sun_color_time[1].color = m_sun_night;
+  sun_color_time[1].time = sunrise_civil;
+  sun_color_time[2].color = m_sun_low;
+  sun_color_time[2].time = sunrise;
+  sun_color_time[3].color = m_sun_noon;
+  sun_color_time[3].time = day_middle;
+  sun_color_time[4].color = m_sun_low;
+  sun_color_time[4].time = sunset;
+  sun_color_time[5].color = m_sun_night;
+  sun_color_time[5].time = sunset_civil;
 }
 
 uint16_t calculate_from_datetime(DateTime time)
@@ -115,41 +132,93 @@ void move_servo(uint16_t now, uint16_t sunrise, uint16_t sunset)
       m_servo.write(servo_position);
     }
   }
+  m_servo.write(0);
 }
 
 void sky_led() {}
 
-void Interpolation(std::vector<Point> points, uint16_t time)
+enum class colors
+{
+  red,
+  green,
+  blue
+};
+
+float Interpolation(Point* points, float time, colors color)
 {
   int j, i;
-  float y, w1, w2, s;
-  s = 0;
-  w1 = 1;
-  for (j = 1; j <= points.size(); j++)
-  {
-    w1 *= time - points[j].time;
-    w2 = 1;
-    for (i = 1; i <= points.size(); i++)
+  float yp = 0, p;
 
+  for (i = 1; i <= n; i++)
+  {
+    p = 1;
+    for (j = 1; j <= n; j++)
+    {
       if (i != j)
-        w2 *= points[j].time - points[i].time;
-    s += points[j].color / static_cast<float>(w2 * (time - points[j].time));
+      {
+        p = p * (time - static_cast<float>(points[j].time)) / (static_cast<float>(points[i].time) - static_cast<float>(points[j].time));
+      }
+    }
+    switch (color)
+    {
+      case colors::red:
+        yp = yp + p * static_cast<float>(points[i].color.r);
+        if (yp > m_sun_noon.r)
+        {
+          yp = m_sun_noon.r;
+        }
+        break;
+      case colors::green:
+        yp = yp + p * static_cast<float>(points[i].color.g);
+        if (yp > m_sun_noon.g)
+        {
+          yp = m_sun_noon.g;
+        }
+        break;
+      case colors::blue:
+        yp = yp + p * static_cast<float>(points[i].color.b);
+        if (yp > m_sun_noon.b)
+        {
+          yp = m_sun_noon.b;
+        }
+        break;
+    }
   }
-  y = w1 * s;
+  return yp;
 }
 
-void set_sun_rgb(uint16_t now, uint16_t start, uint16_t stop)
+void set_sky_rgb() {}
+
+void set_sun_rgb(uint16_t now, Point* points)
 {
-  // uint8_t r = map(now, start, stop, m_starting_pwm, m_sun_low_color.r);
-  // uint8_t g = map(now, start, stop, m_starting_pwm, m_sun_low_color.r);
-  // uint8_t b = map(now, start, stop, m_starting_pwm, m_sun_low_color.r);
+  Serial.print("now:");
+  for (int i = 1; i <= n; i++)
+  {
+    /* code */
+  }
 
-  // Serial.print("sunrise r");
-  // Serial.println(r);
-
-  // analogWrite(m_pin_led_r, r);
-  // analogWrite(m_pin_led_g, g);
-  // analogWrite(m_pin_led_b, b);
+  Serial.println("sun colors:");
+  auto color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::red));
+  if (color > m_sun_noon.r)
+  {
+    color = m_sun_noon.r;
+  }
+  analogWrite(m_pin_led_r, color);
+  Serial.println(color);
+  color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::green));
+  if (color > m_sun_noon.g)
+  {
+    color = m_sun_noon.g;
+  }
+  analogWrite(m_pin_led_g, color);
+  Serial.println(color);
+  color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::blue));
+  if (color > m_sun_noon.b)
+  {
+    color = m_sun_noon.b;
+  }
+  analogWrite(m_pin_led_b, color);
+  Serial.println(color);
 }
 
 /**
@@ -187,35 +256,35 @@ void loop()
   static uint16_t sunset = static_cast<uint16_t>(sun.calcSunset());
   static uint16_t sunrise_civil = static_cast<uint16_t>(sun.calcCivilSunrise());
   static uint16_t sunset_civil = static_cast<uint16_t>(sun.calcCivilSunset());
+  static Point sun_color_position[6];
 
   static unsigned long last_loop_time = 0;
   unsigned long loop_time = millis();
   if (loop_time - last_loop_time > m_refresh_time_ms)
   {
     // auto now = m_rtc.now();
-    auto now = DateTime(2021, 10, 8, 17, 45, 0);
+    auto now = DateTime(2021, 10, 8, 6, 45, 0);
 
     Serial.print("Now: ");
     print_time(now);
     last_loop_time = millis();
 
-    Serial.print("Sunrise civil: ");
-    print_time(calculate_from_minutes(sunrise_civil));
-    Serial.print("Sunrise: ");
-    print_time(calculate_from_minutes(sunrise));
-    Serial.print("Sunset: ");
-    print_time(calculate_from_minutes(sunset));
-    Serial.print("Sunset civil: ");
-    print_time(calculate_from_minutes(sunset_civil));
-
     auto minutes = calculate_from_datetime(now);
 
-    move_servo(calculate_from_datetime(now), sunrise, sunset);
+    static bool is_calculated = false;
+    if (minutes == 1 || !is_calculated)
+    {
+      calculate_sunrise_sunset(sunrise, sunset, sunrise_civil, sunset_civil, sun_color_position);
+      is_calculated = true;
+    }
 
-    // test
-    analogWrite(m_pin_led_r, 255);
-    // analogWrite(m_pin_led_r, test_servo * 2);
-    // analogWrite(m_pin_led_b, test_servo /2);
+    if ((minutes > sunrise_civil) && (minutes < sunset_civil))
+    {
+      set_sun_rgb(minutes, sun_color_position);
+    }
+
+    move_servo(minutes, sunrise, sunset);
+
     uint32_t color = m_sky_blue.get_color();
     m_ws_leds.fill(color);
     m_ws_leds.show();
