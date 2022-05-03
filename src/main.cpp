@@ -6,6 +6,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <Wire.h>
+#include <math.h>
 
 struct Color
 {
@@ -20,7 +21,10 @@ struct Color
   uint8_t b;
   uint32_t get_color() const
   {
-    return Adafruit_NeoPixel::Color(r, g, b);
+    uint32_t color = b;
+    color += g << 8;
+    color += r << 16;
+    return color;
   }
 };
 
@@ -53,8 +57,8 @@ const uint8_t m_max_servo_pos = 180;
 const uint8_t m_min_in_h = 60;
 
 const Color m_sun_night = Color(0, 0, 0);
-const Color m_sun_low = Color(242, 59, 14);
-const Color m_sun_noon = Color(255, 255, 25);
+const Color m_sun_low = Color(27, 2, 0);
+const Color m_sun_noon = Color(255, 255, 0);
 
 const Color m_sky_blue = Color(64, 166, 255);
 
@@ -144,81 +148,45 @@ enum class colors
   blue
 };
 
-float Interpolation(Point* points, float time, colors color)
-{
-  int j, i;
-  float yp = 0, p;
-
-  for (i = 1; i <= n; i++)
-  {
-    p = 1;
-    for (j = 1; j <= n; j++)
-    {
-      if (i != j)
-      {
-        p = p * (time - static_cast<float>(points[j].time)) / (static_cast<float>(points[i].time) - static_cast<float>(points[j].time));
-      }
-    }
-    switch (color)
-    {
-      case colors::red:
-        yp = yp + p * static_cast<float>(points[i].color.r);
-        if (yp > m_sun_noon.r)
-        {
-          yp = m_sun_noon.r;
-        }
-        break;
-      case colors::green:
-        yp = yp + p * static_cast<float>(points[i].color.g);
-        if (yp > m_sun_noon.g)
-        {
-          yp = m_sun_noon.g;
-        }
-        break;
-      case colors::blue:
-        yp = yp + p * static_cast<float>(points[i].color.b);
-        if (yp > m_sun_noon.b)
-        {
-          yp = m_sun_noon.b;
-        }
-        break;
-    }
-  }
-  return yp;
-}
-
 void set_sky_rgb() {}
+
+uint16_t sin(uint16_t x, uint16_t max)
+{
+  return max * (std::sin(((x - max) * M_PI) / (max * 2))) + max;
+}
 
 void set_sun_rgb(uint16_t now, Point* points)
 {
   Serial.print("now:");
-  for (int i = 1; i <= n; i++)
-  {
-    /* code */
-  }
 
-  Serial.println("sun colors:");
-  auto color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::red));
-  if (color > m_sun_noon.r)
-  {
-    color = m_sun_noon.r;
-  }
-  analogWrite(m_pin_led_r, color);
-  Serial.println(color);
-  color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::green));
-  if (color > m_sun_noon.g)
-  {
-    color = m_sun_noon.g;
-  }
-  analogWrite(m_pin_led_g, color);
-  Serial.println(color);
-  color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::blue));
-  if (color > m_sun_noon.b)
-  {
-    color = m_sun_noon.b;
-  }
-  analogWrite(m_pin_led_b, color);
-  Serial.println(color);
+
+  // for (int i = 1; i <= n; i++)
+  // {
+  //   /* code */
+  // }
+
+  // Serial.println("sun colors:");
+  // auto color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::red));
+  // if (color > m_sun_noon.r)
+  // {
+  //   color = m_sun_noon.r;
+  // }
+  // analogWrite(m_pin_led_r, color);
+  // Serial.println(color);
+  // color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::green));
+  // if (color > m_sun_noon.g)
+  // {
+  //   color = m_sun_noon.g;
+  // }
+  // analogWrite(m_pin_led_g, color);
+  // Serial.println(color);
+  // color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::blue));
+  // if (color > m_sun_noon.b)
+  // {
+  //   color = m_sun_noon.b;
+  // }
+  // analogWrite(m_pin_led_b, color);
+  // Serial.println(color);
 }
 
 /**
@@ -280,7 +248,7 @@ void loop()
 
     if ((minutes > sunrise_civil) && (minutes < sunset_civil))
     {
-      set_sun_rgb(minutes, sun_color_position);
+      set_sun_rgb(minutes, sun_color_position); // split to two function
     }
 
     move_servo(minutes, sunrise, sunset);
