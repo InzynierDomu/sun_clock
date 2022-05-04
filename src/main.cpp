@@ -7,11 +7,11 @@
 #include <Servo.h>
 #include <Wire.h>
 #include <math.h>
+#include <stdint.h>
 
 struct Color
 {
-  Color() {}
-  Color(uint8_t _r, uint8_t _g, uint8_t _b)
+  Color(uint8_t _r = 0, uint8_t _g = 0, uint8_t _b = 0)
   : r(_r)
   , g(_g)
   , b(_b)
@@ -152,41 +152,43 @@ void set_sky_rgb() {}
 
 uint16_t sin(uint16_t x, uint16_t max)
 {
-  return max * (std::sin(((x - max) * M_PI) / (max * 2))) + max;
+  //return max * (std::sin(((x - max) * M_PI) / (max * 2))) + max; todo: problem with sin
 }
+
+Color get_sun_sunrise_rgb(uint16_t now) {}
+
+Color get_sun_day_rgb(uint16_t now) {}
 
 void set_sun_rgb(uint16_t now, Point* points)
 {
-  Serial.print("now:");
+  // todo: now uint16_t Point time uint32_t
+  Color color;
+  if (now > points[5].time)
+  {
+    color = points[5].color;
+  }
+  else if (now > points[4].time)
+  {
+    color = get_sun_sunrise_rgb(now);
+  }
+  else if (now > points[3].time)
+  {
+    color = get_sun_day_rgb(now);
+  }
+  else if (now > points[2].time)
+  {
+    color = get_sun_sunrise_rgb(now);
+  }
+  else
+  {
+    color = points[1].color;
+  }
 
+  analogWrite(m_pin_led_r, color.r);
+  analogWrite(m_pin_led_g, color.g);
+  analogWrite(m_pin_led_b, color.b);
 
-  // for (int i = 1; i <= n; i++)
-  // {
-  //   /* code */
-  // }
-
-  // Serial.println("sun colors:");
-  // auto color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::red));
-  // if (color > m_sun_noon.r)
-  // {
-  //   color = m_sun_noon.r;
-  // }
-  // analogWrite(m_pin_led_r, color);
-  // Serial.println(color);
-  // color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::green));
-  // if (color > m_sun_noon.g)
-  // {
-  //   color = m_sun_noon.g;
-  // }
-  // analogWrite(m_pin_led_g, color);
-  // Serial.println(color);
-  // color = static_cast<uint_fast16_t>(Interpolation(points, static_cast<float>(now), colors::blue));
-  // if (color > m_sun_noon.b)
-  // {
-  //   color = m_sun_noon.b;
-  // }
-  // analogWrite(m_pin_led_b, color);
-  // Serial.println(color);
+  Serial.println(color.get_color());
 }
 
 /**
@@ -246,10 +248,7 @@ void loop()
       is_calculated = true;
     }
 
-    if ((minutes > sunrise_civil) && (minutes < sunset_civil))
-    {
-      set_sun_rgb(minutes, sun_color_position); // split to two function
-    }
+    set_sun_rgb(minutes, sun_color_position);
 
     move_servo(minutes, sunrise, sunset);
 
