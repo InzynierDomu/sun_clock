@@ -55,11 +55,11 @@ const int8_t m_dst_offset = 2;
 
 const unsigned long m_refresh_time_ms = 15000;
 
-const byte m_pin_servo = 5;
-const byte m_pin_led_r = 9;
-const byte m_pin_led_g = 10;
-const byte m_pin_led_b = 11;
-const byte m_led_ws = 6;
+const byte m_pin_servo = 9;
+const byte m_pin_led_r = 3;
+const byte m_pin_led_g = 5;
+const byte m_pin_led_b = 6;
+const byte m_led_ws = 7;
 const uint8_t m_led_ws_count = 10;
 const uint8_t m_min_servo_pos = 0;
 const uint8_t m_max_servo_pos = 180;
@@ -69,8 +69,6 @@ const uint8_t m_min_in_h = 60;
 Sun_position sun_position;
 
 const Color m_sky_blue = Color(0, 0, 10);
-
-const uint8_t n = 5;
 
 RTC_DS1307 m_rtc; ///< DS1307 RTC
 SunSet sun;
@@ -137,7 +135,7 @@ void move_servo(uint16_t now)
 
     if (servo_position < m_max_servo_pos)
     {
-      // m_servo.write(servo_position);
+      m_servo.write(servo_position);
     }
   }
   m_servo.write(0);
@@ -181,13 +179,8 @@ Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
   {
     Serial.println("rising under horizon");
     auto y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, colors::red);
-    Serial.print("y");
-    Serial.println(y);
-    Serial.print("max");
-    Serial.println(sun_position.sunrise.color.r);
     color.r = sin_fun(y, sun_position.sunrise.color.r);
-    Serial.print("r");
-    Serial.println(color.r);
+    color.g = sin_fun(y, sun_position.sunrise.color.g);
     return color;
   }
   Serial.println("faling under horizon");
@@ -236,11 +229,9 @@ void set_sun_rgb(uint16_t now)
     Serial.println("night");
   }
 
-  Serial.println(color.r);
-
   analogWrite(m_pin_led_r, color.r);
   analogWrite(m_pin_led_g, color.g);
-  analogWrite(m_pin_led_b, color.b);  
+  analogWrite(m_pin_led_b, color.b);
 }
 
 /**
