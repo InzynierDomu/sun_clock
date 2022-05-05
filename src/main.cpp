@@ -31,11 +31,11 @@ struct Color
 struct Point
 {
   Point() {}
-  Point(uint32_t _time, Color _color)
+  Point(uint16_t _time, Color _color)
   : time(_time)
   , color(_color)
   {}
-  uint32_t time;
+  uint16_t time;
   Color color;
 };
 
@@ -68,7 +68,7 @@ const uint8_t m_min_in_h = 60;
 
 Sun_position sun_position;
 
-const Color m_sky_blue = Color(64, 166, 255);
+const Color m_sky_blue = Color(0, 0, 10);
 
 const uint8_t n = 5;
 
@@ -115,11 +115,11 @@ void calculate_sunrise_sunset()
   print_time(calculate_from_minutes(day_middle));
 
   sun_position.night = Point(0, Color());
-  sun_position.sunrise_civil = Point(sunrise_civil, Color(27, 2, 0));
-  sun_position.sunrise = Point(sunrise, Color(255, 255, 0));
+  sun_position.sunrise_civil = Point(sunrise_civil, Color());
+  sun_position.sunrise = Point(sunrise, Color(27, 2, 0));
   sun_position.noon = Point(day_middle, Color(255, 255, 0));
-  sun_position.sunset = Point(sunset, Color(255, 255, 0));
-  sun_position.sunset_civil = Point(sunset_civil, Color(27, 2, 0));
+  sun_position.sunset = Point(sunset, Color(27, 2, 0));
+  sun_position.sunset_civil = Point(sunset_civil, Color());
 }
 
 uint16_t calculate_from_datetime(DateTime time)
@@ -137,7 +137,7 @@ void move_servo(uint16_t now)
 
     if (servo_position < m_max_servo_pos)
     {
-      m_servo.write(servo_position);
+      // m_servo.write(servo_position);
     }
   }
   m_servo.write(0);
@@ -154,30 +154,65 @@ enum class colors
 
 void set_sky_rgb() {}
 
-uint16_t sin(uint16_t x, uint16_t max)
+uint16_t sin_fun(float x, float max)
 {
   return max * (sin(((x - max) * M_PI) / (max * 2))) + max;
 }
 
+uint16_t get_maped_time_to_color(uint16_t now, Point from, Point to, colors color)
+{
+  switch (color)
+  {
+    case colors::red:
+      return map(now, from.time, to.time, from.color.r, to.color.r);
+    case colors::green:
+      return map(now, from.time, to.time, from.color.g, to.color.g);
+    case colors::blue:
+      return map(now, from.time, to.time, from.color.b, to.color.b);
+    default:
+      return 0;
+  }
+}
+
 Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
 {
+  Color color;
   if (is_rising)
-  {}
+  {
+    Serial.println("rising under horizon");
+    auto y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, colors::red);
+    Serial.print("y");
+    Serial.println(y);
+    Serial.print("max");
+    Serial.println(sun_position.sunrise.color.r);
+    color.r = sin_fun(y, sun_position.sunrise.color.r);
+    Serial.print("r");
+    Serial.println(color.r);
+    return color;
+  }
+  Serial.println("faling under horizon");
+  return color;
 }
 
 Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
 {
+  Color color;
   if (is_afternoon)
-  {}
+  {
+    Serial.println("rising to noon");
+    return color;
+  }
+  Serial.println("faling to sunset");
+  return color;
 }
 
 void set_sun_rgb(uint16_t now)
 {
-  // todo: now uint16_t Point time uint32_t
   Color color;
   if (now > sun_position.sunset.time)
   {
     color = sun_position.night.color;
+    Serial.println("night");
   }
   else if (now > sun_position.sunset_civil.time)
   {
@@ -185,11 +220,11 @@ void set_sun_rgb(uint16_t now)
   }
   else if (now > sun_position.noon.time)
   {
-    color = get_sun_day_rgb(now, true);
+    color = get_sun_day_rgb(now, false);
   }
   else if (now > sun_position.sunrise.time)
   {
-    color = get_sun_day_rgb(now, false);
+    color = get_sun_day_rgb(now, true);
   }
   else if (now > sun_position.sunrise_civil.time)
   {
@@ -198,13 +233,14 @@ void set_sun_rgb(uint16_t now)
   else
   {
     color = sun_position.night.color;
+    Serial.println("night");
   }
+
+  Serial.println(color.r);
 
   analogWrite(m_pin_led_r, color.r);
   analogWrite(m_pin_led_g, color.g);
-  analogWrite(m_pin_led_b, color.b);
-
-  Serial.println(color.get_color());
+  analogWrite(m_pin_led_b, color.b);  
 }
 
 /**
@@ -227,7 +263,7 @@ void setup()
   m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
   sun.setPosition(m_latitude, m_longitude, m_dst_offset);
-  sun.setCurrentDate(2021, 10, 8);
+  sun.setCurrentDate(2022, 5, 5);
 
   pinMode(m_pin_led_r, OUTPUT);
   pinMode(m_pin_led_g, OUTPUT);
@@ -243,7 +279,7 @@ void loop()
   if (loop_time - last_loop_time > m_refresh_time_ms)
   {
     // auto now = m_rtc.now();
-    auto now = DateTime(2021, 10, 8, 6, 45, 0);
+    auto now = DateTime(2022, 5, 5, 5, 16, 0);
 
     Serial.print("Now: ");
     print_time(now);
