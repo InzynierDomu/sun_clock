@@ -141,8 +141,6 @@ void move_servo(uint16_t now)
   m_servo.write(0);
 }
 
-void sky_led() {}
-
 enum class colors
 {
   red,
@@ -150,7 +148,13 @@ enum class colors
   blue
 };
 
-void set_sky_rgb() {}
+void set_sky_rgb(uint16_t now)
+{
+  // todo: rising with sunset and falling wiht sunset
+  uint32_t color = m_sky_blue.get_color();
+  m_ws_leds.fill(color);
+  m_ws_leds.show();
+}
 
 uint16_t sin_fun(float x, float max)
 {
@@ -198,14 +202,23 @@ Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
   if (is_afternoon)
   {
     Serial.println("rising to noon");
+    auto y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, colors::red);
+    color.r = sin_fun(y, sun_position.sunrise.noon.r);
+    y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, colors::green);
+    color.g = sin_fun(y, sun_position.sunrise.noon.g);
     return color;
   }
   Serial.println("faling to sunset");
+  auto y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, colors::red);
+  color.r = sin_fun(y, sun_position.sunrise.noon.r);
+  y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, colors::green);
+  color.g = sin_fun(y, sun_position.sunrise.noon.g);
   return color;
 }
 
 void set_sun_rgb(uint16_t now)
 {
+  // todo: make some state machine - reuse in sky color set
   Color color;
   if (now > sun_position.sunset_civil.time)
   {
@@ -294,8 +307,6 @@ void loop()
 
     move_servo(minutes);
 
-    uint32_t color = m_sky_blue.get_color();
-    m_ws_leds.fill(color);
-    m_ws_leds.show();
+    set_sky_rgb(minutes);
   }
 }
