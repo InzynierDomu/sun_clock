@@ -180,10 +180,15 @@ Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
     Serial.println("rising under horizon");
     auto y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, colors::red);
     color.r = sin_fun(y, sun_position.sunrise.color.r);
+    y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, colors::green);
     color.g = sin_fun(y, sun_position.sunrise.color.g);
     return color;
   }
   Serial.println("faling under horizon");
+  auto y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunrise_civil, colors::red);
+  color.r = sin_fun(y, sun_position.sunset.color.r);
+  y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunset_civil, colors::green);
+  color.g = sin_fun(y, sun_position.sunset.color.g);
   return color;
 }
 
@@ -202,12 +207,12 @@ Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
 void set_sun_rgb(uint16_t now)
 {
   Color color;
-  if (now > sun_position.sunset.time)
+  if (now > sun_position.sunset_civil.time)
   {
     color = sun_position.night.color;
     Serial.println("night");
   }
-  else if (now > sun_position.sunset_civil.time)
+  else if (now > sun_position.sunset.time)
   {
     color = get_sun_horizon_rgb(now, false);
   }
@@ -270,7 +275,7 @@ void loop()
   if (loop_time - last_loop_time > m_refresh_time_ms)
   {
     // auto now = m_rtc.now();
-    auto now = DateTime(2022, 5, 5, 5, 16, 0);
+    auto now = DateTime(2022, 5, 5, 20, 40, 0);
 
     Serial.print("Now: ");
     print_time(now);
