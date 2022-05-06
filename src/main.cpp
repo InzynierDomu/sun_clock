@@ -1,4 +1,5 @@
 #include "Adafruit_NeoPixel.h"
+#include "Config.h"
 #include "RTClib.h"
 #include "math.h"
 #include "sunset.h"
@@ -8,6 +9,23 @@
 #include <Wire.h>
 #include <math.h>
 #include <stdint.h>
+
+
+enum class Colors
+{
+  red,
+  green,
+  blue
+};
+
+enum class Day_part
+{
+  night,
+  sunrise,
+  before_noon,
+  after_noon,
+  sunset
+};
 
 struct Color
 {
@@ -49,35 +67,22 @@ struct Sun_position
   Point sunset_civil;
 };
 
-const double m_latitude = 51.1078852;
-const double m_longitude = 17.0385376;
-const int8_t m_dst_offset = 2;
-
 const unsigned long m_refresh_time_ms = 15000;
-
-const byte m_pin_servo = 9;
-const byte m_pin_led_r = 3;
-const byte m_pin_led_g = 5;
-const byte m_pin_led_b = 6;
-const byte m_led_ws = 7;
-const uint8_t m_led_ws_count = 10;
-const uint8_t m_min_servo_pos = 0;
-const uint8_t m_max_servo_pos = 180;
 
 const uint8_t m_min_in_h = 60;
 
 Sun_position sun_position;
 
-const Color m_sky_blue = Color(0, 0, 10);
+Day_part actual_day_part;
 
 RTC_DS1307 m_rtc; ///< DS1307 RTC
 SunSet sun;
 Servo m_servo;
-Adafruit_NeoPixel m_ws_leds(m_led_ws_count, m_led_ws, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel m_ws_leds(Config::led_ws_count, Config::led_ws, NEO_GRB + NEO_KHZ800);
 
 DateTime calculate_from_minutes(uint16_t total_min)
 {
-  m_servo.attach(m_pin_servo);
+  m_servo.attach(Config::pin_servo);
 
   auto minutes = total_min % m_min_in_h;
   auto houres = (total_min - minutes) / m_min_in_h;
@@ -129,11 +134,11 @@ void move_servo(uint16_t now)
 {
   if (now > sun_position.sunrise.time)
   {
-    uint8_t servo_position = map(now, sun_position.sunrise.time, sun_position.sunset.time, m_min_servo_pos, m_max_servo_pos);
+    uint8_t servo_position = map(now, sun_position.sunrise.time, sun_position.sunset.time, Config::min_servo_pos, Config::max_servo_pos);
     Serial.print("servo pos: ");
     Serial.println(servo_position);
 
-    if (servo_position < m_max_servo_pos)
+    if (servo_position < Config::max_servo_pos)
     {
       m_servo.write(servo_position);
     }
@@ -141,15 +146,9 @@ void move_servo(uint16_t now)
   m_servo.write(0);
 }
 
-enum class colors
-{
-  red,
-  green,
-  blue
-};
-
 void set_sky_rgb(uint16_t now)
 {
+  const Color m_sky_blue = Color(0, 0, 10);
   // todo: rising with sunset and falling wiht sunset
   uint32_t color = m_sky_blue.get_color();
   m_ws_leds.fill(color);
@@ -161,15 +160,15 @@ uint16_t sin_fun(float x, float max)
   return max * (sin(((x - max) * M_PI) / (max * 2))) + max;
 }
 
-uint16_t get_maped_time_to_color(uint16_t now, Point from, Point to, colors color)
+uint16_t get_maped_time_to_color(uint16_t now, Point from, Point to, Colors color)
 {
   switch (color)
   {
-    case colors::red:
+    case Colors::red:
       return map(now, from.time, to.time, from.color.r, to.color.r);
-    case colors::green:
+    case Colors::green:
       return map(now, from.time, to.time, from.color.g, to.color.g);
-    case colors::blue:
+    case Colors::blue:
       return map(now, from.time, to.time, from.color.b, to.color.b);
     default:
       return 0;
@@ -182,16 +181,16 @@ Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
   if (is_rising)
   {
     Serial.println("rising under horizon");
-    auto y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, colors::red);
+    auto y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, Colors::red);
     color.r = sin_fun(y, sun_position.sunrise.color.r);
-    y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, colors::green);
+    y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, Colors::green);
     color.g = sin_fun(y, sun_position.sunrise.color.g);
     return color;
   }
   Serial.println("faling under horizon");
-  auto y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunrise_civil, colors::red);
+  auto y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunrise_civil, Colors::red);
   color.r = sin_fun(y, sun_position.sunset.color.r);
-  y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunset_civil, colors::green);
+  y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunset_civil, Colors::green);
   color.g = sin_fun(y, sun_position.sunset.color.g);
   return color;
 }
@@ -202,17 +201,17 @@ Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
   if (is_afternoon)
   {
     Serial.println("rising to noon");
-    auto y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, colors::red);
-    color.r = sin_fun(y, sun_position.sunrise.noon.r);
-    y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, colors::green);
-    color.g = sin_fun(y, sun_position.sunrise.noon.g);
+    auto y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, Colors::red);
+    color.r = sin_fun(y, sun_position.noon.color.r);
+    y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, Colors::green);
+    color.g = sin_fun(y, sun_position.noon.color.g);
     return color;
   }
   Serial.println("faling to sunset");
-  auto y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, colors::red);
-  color.r = sin_fun(y, sun_position.sunrise.noon.r);
-  y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, colors::green);
-  color.g = sin_fun(y, sun_position.sunrise.noon.g);
+  auto y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, Colors::red);
+  color.r = sin_fun(y, sun_position.noon.color.r);
+  y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, Colors::green);
+  color.g = sin_fun(y, sun_position.noon.color.g);
   return color;
 }
 
@@ -247,9 +246,9 @@ void set_sun_rgb(uint16_t now)
     Serial.println("night");
   }
 
-  analogWrite(m_pin_led_r, color.r);
-  analogWrite(m_pin_led_g, color.g);
-  analogWrite(m_pin_led_b, color.b);
+  analogWrite(Config::pin_led_r, color.r);
+  analogWrite(Config::pin_led_g, color.g);
+  analogWrite(Config::pin_led_b, color.b);
 }
 
 /**
@@ -271,12 +270,12 @@ void setup()
 
   m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
-  sun.setPosition(m_latitude, m_longitude, m_dst_offset);
+  sun.setPosition(Config::latitude, Config::longitude, Config::dst_offset);
   sun.setCurrentDate(2022, 5, 5);
 
-  pinMode(m_pin_led_r, OUTPUT);
-  pinMode(m_pin_led_g, OUTPUT);
-  pinMode(m_pin_led_b, OUTPUT);
+  pinMode(Config::pin_led_r, OUTPUT);
+  pinMode(Config::pin_led_g, OUTPUT);
+  pinMode(Config::pin_led_b, OUTPUT);
 
   m_ws_leds.begin();
 }
