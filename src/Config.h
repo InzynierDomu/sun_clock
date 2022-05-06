@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 namespace Config
 {
 const uint8_t pin_servo = 9;

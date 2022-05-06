@@ -1,7 +1,6 @@
 #include "Adafruit_NeoPixel.h"
 #include "Config.h"
 #include "RTClib.h"
-#include "math.h"
 #include "sunset.h"
 
 #include <Arduino.h>
@@ -9,7 +8,6 @@
 #include <Wire.h>
 #include <math.h>
 #include <stdint.h>
-
 
 enum class Colors
 {
@@ -120,7 +118,7 @@ void calculate_sunrise_sunset()
   sun_position.night = Point(0, Color());
   sun_position.sunrise_civil = Point(sunrise_civil, Color());
   sun_position.sunrise = Point(sunrise, Color(27, 2, 0));
-  sun_position.noon = Point(day_middle, Color(255, 255, 0));
+  sun_position.noon = Point(day_middle, Color(255, 220, 0));
   sun_position.sunset = Point(sunset, Color(27, 2, 0));
   sun_position.sunset_civil = Point(sunset_civil, Color());
 }
@@ -132,6 +130,7 @@ uint16_t calculate_from_datetime(DateTime time)
 
 void move_servo(uint16_t now)
 {
+  //todo: not run servo if pos not change
   if (now > sun_position.sunrise.time)
   {
     uint8_t servo_position = map(now, sun_position.sunrise.time, sun_position.sunset.time, Config::min_servo_pos, Config::max_servo_pos);
@@ -142,8 +141,11 @@ void move_servo(uint16_t now)
     {
       m_servo.write(servo_position);
     }
-  }
-  m_servo.write(0);
+    else
+    {
+      m_servo.write(0);
+    }
+  }  
 }
 
 void set_sky_rgb(uint16_t now)
@@ -222,28 +224,32 @@ void set_sun_rgb(uint16_t now)
   if (now > sun_position.sunset_civil.time)
   {
     color = sun_position.night.color;
-    Serial.println("night");
+    actual_day_part = Day_part::night;
   }
   else if (now > sun_position.sunset.time)
   {
     color = get_sun_horizon_rgb(now, false);
+    actual_day_part = Day_part::sunset;
   }
   else if (now > sun_position.noon.time)
   {
     color = get_sun_day_rgb(now, false);
+    actual_day_part = Day_part::after_noon;
   }
   else if (now > sun_position.sunrise.time)
   {
     color = get_sun_day_rgb(now, true);
+    actual_day_part = Day_part::before_noon;
   }
   else if (now > sun_position.sunrise_civil.time)
   {
     color = get_sun_horizon_rgb(now, true);
+    actual_day_part = Day_part::sunrise;
   }
   else
   {
     color = sun_position.night.color;
-    Serial.println("night");
+    actual_day_part = Day_part::night;
   }
 
   analogWrite(Config::pin_led_r, color.r);
@@ -287,7 +293,7 @@ void loop()
   if (loop_time - last_loop_time > m_refresh_time_ms)
   {
     // auto now = m_rtc.now();
-    auto now = DateTime(2022, 5, 5, 20, 40, 0);
+    auto now = DateTime(2022, 5, 5, 12, 40, 0);
 
     Serial.print("Now: ");
     print_time(now);
