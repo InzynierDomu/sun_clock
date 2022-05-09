@@ -1,8 +1,8 @@
 #include "Adafruit_NeoPixel.h"
+#include "Color.h"
 #include "Config.h"
 #include "RTClib.h"
 #include "sunset.h"
-#include "Color.h"
 
 #include <Arduino.h>
 #include <Servo.h>
@@ -32,15 +32,12 @@ struct Point
 
 struct Sun_position
 {
-  Point night;
   Point sunrise_civil;
   Point sunrise;
   Point noon;
   Point sunset;
   Point sunset_civil;
 };
-
-const unsigned long m_refresh_time_ms = 15000;
 
 const uint8_t m_min_in_h = 60;
 
@@ -55,8 +52,6 @@ Adafruit_NeoPixel m_ws_leds(Config::led_ws_count, Config::led_ws, NEO_GRB + NEO_
 
 DateTime calculate_from_minutes(uint16_t total_min)
 {
-  m_servo.attach(Config::pin_servo);
-
   auto minutes = total_min % m_min_in_h;
   auto houres = (total_min - minutes) / m_min_in_h;
   return DateTime(1970, 1, 1, houres, minutes);
@@ -90,9 +85,8 @@ void calculate_sunrise_sunset()
   uint16_t day_middle = ((sunset - sunrise) / 2) + sunrise;
   print_time(calculate_from_minutes(day_middle));
 
-  sun_position.night = Point(0, Color());
   sun_position.sunrise_civil = Point(sunrise_civil, Color());
-  sun_position.sunrise = Point(sunrise, Config::horizon_sun);     //todo: move const color to config
+  sun_position.sunrise = Point(sunrise, Config::horizon_sun);
   sun_position.noon = Point(day_middle, Config::noon);
   sun_position.sunset = Point(sunset, Config::horizon_sun);
   sun_position.sunset_civil = Point(sunset_civil, Color());
@@ -105,17 +99,27 @@ uint16_t calculate_from_datetime(DateTime time)
 
 void move_servo(uint16_t now)
 {
-  uint8_t servo_position = map(now, sun_position.sunrise.time, sun_position.sunset.time, Config::min_servo_pos, Config::max_servo_pos);
+  m_servo.attach(Config::pin_servo);
+  uint8_t servo_position;
+
+  if (actual_day_part == Day_part::sunset)
+  {
+    servo_position = Config::max_servo_pos;
+  }
+  else if (actual_day_part == Day_part::sunrise || actual_day_part == Day_part::night)
+  {
+    servo_position = Config::min_servo_pos;
+  }
+  else
+  {
+    servo_position = map(now, sun_position.sunrise.time, sun_position.sunset.time, Config::min_servo_pos, Config::max_servo_pos);
+  }
+
   Serial.print("servo pos: ");
   Serial.println(servo_position);
 
   m_servo.write(servo_position);
-}
-
-void set_sky_rgb(uint16_t now)
-{
-  m_ws_leds.fill(Config::blue_sky.get_color());
-  m_ws_leds.show();
+  // m_servo.detach();
 }
 
 uint16_t sin_fun(float x, float max)
@@ -123,19 +127,43 @@ uint16_t sin_fun(float x, float max)
   return max * (sin(((x - max) * M_PI) / (max * 2))) + max;
 }
 
-uint16_t get_maped_time_to_color(uint16_t now, Point from, Point to, Colors color)
+Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
 {
-  switch (color)
+  Color color;
+  if (is_rising)
   {
-    case Colors::red:
-      return map(now, from.time, to.time, from.color.r, to.color.r);
-    case Colors::green:
-      return map(now, from.time, to.time, from.color.g, to.color.g);
-    case Colors::blue:
-      return map(now, from.time, to.time, from.color.b, to.color.b);
-    default:
-      return 0;
+    auto y = map(now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.b);
+    color.b = sin_fun(y, Config::blue_sky.b);
+    return color;
   }
+  auto y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, 0, Config::blue_sky.b);
+  color.b = sin_fun(y, Config::blue_sky.b);
+  return color;
+}
+
+void set_sky_rgb(uint16_t now)
+{
+  Color color;
+
+  switch (actual_day_part)
+  {
+    case Day_part::sunset:
+      color = get_sky_horizon_rgb(now, false);
+      break;
+    case Day_part::sunrise:
+      color = get_sky_horizon_rgb(now, true);
+      break;
+    case Day_part::before_noon:
+      [[fallthrough]];
+    case Day_part::after_noon:
+      color = Config::blue_sky;
+      break;
+    default:
+      break;
+  }
+
+  m_ws_leds.fill(color.get_color());
+  m_ws_leds.show();
 }
 
 Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
@@ -143,17 +171,18 @@ Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
   Color color;
   if (is_rising)
   {
-    Serial.println("rising under horizon");
-    auto y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, Colors::red);
+    auto y = map(
+        now, sun_position.sunrise_civil.time, sun_position.sunrise.time, sun_position.sunrise_civil.color.r, sun_position.sunrise.color.r);
     color.r = sin_fun(y, sun_position.sunrise.color.r);
-    y = get_maped_time_to_color(now, sun_position.sunrise_civil, sun_position.sunrise, Colors::green);
+    y = map(
+        now, sun_position.sunrise_civil.time, sun_position.sunrise.time, sun_position.sunrise_civil.color.g, sun_position.sunrise.color.g);
     color.g = sin_fun(y, sun_position.sunrise.color.g);
     return color;
   }
-  Serial.println("faling under horizon");
-  auto y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunrise_civil, Colors::red);
+  auto y =
+      map(now, sun_position.sunset.time, sun_position.sunset_civil.time, sun_position.sunset.color.r, sun_position.sunset_civil.color.r);
   color.r = sin_fun(y, sun_position.sunset.color.r);
-  y = get_maped_time_to_color(now, sun_position.sunset, sun_position.sunset_civil, Colors::green);
+  y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, sun_position.sunset.color.g, sun_position.sunset_civil.color.g);
   color.g = sin_fun(y, sun_position.sunset.color.g);
   return color;
 }
@@ -163,18 +192,12 @@ Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
   Color color;
   if (is_afternoon)
   {
-    Serial.println("rising to noon");
-    auto y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, Colors::red);
-    color.r = sin_fun(y, sun_position.noon.color.r);
-    y = get_maped_time_to_color(now, sun_position.sunrise, sun_position.noon, Colors::green);
-    color.g = sin_fun(y, sun_position.noon.color.g);
+    color.r = map(now, sun_position.sunrise.time, sun_position.noon.time, sun_position.sunrise.color.r, sun_position.noon.color.r);
+    color.g = map(now, sun_position.sunrise.time, sun_position.noon.time, sun_position.sunrise.color.g, sun_position.noon.color.g);
     return color;
   }
-  Serial.println("faling to sunset");
-  auto y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, Colors::red);
-  color.r = sin_fun(y, sun_position.noon.color.r);
-  y = get_maped_time_to_color(now, sun_position.noon, sun_position.sunset, Colors::green);
-  color.g = sin_fun(y, sun_position.noon.color.g);
+  color.r = map(now, sun_position.noon.time, sun_position.sunset.time, sun_position.noon.color.r, sun_position.sunset.color.r);
+  color.g = map(now, sun_position.noon.time, sun_position.sunset.time, sun_position.noon.color.g, sun_position.sunset.color.g);
   return color;
 }
 
@@ -182,6 +205,7 @@ void check_day_part(uint16_t now)
 {
   if (now > sun_position.sunset_civil.time)
   {
+    Serial.println("faling to sunset");
     actual_day_part = Day_part::night;
   }
   else if (now > sun_position.sunset.time)
@@ -212,9 +236,6 @@ void set_sun_rgb(uint16_t now)
 
   switch (actual_day_part)
   {
-    case Day_part::night:
-      color = sun_position.night.color;
-      break;
     case Day_part::sunset:
       color = get_sun_horizon_rgb(now, false);
       break;
@@ -263,20 +284,16 @@ void setup()
   pinMode(Config::pin_led_b, OUTPUT);
 
   m_ws_leds.begin();
-  auto now = DateTime(2022, 5, 5, 12, 40, 0);
-  auto minutes = calculate_from_datetime(now);
-  set_sky_rgb(minutes);
-  m_servo.write(0);
 }
 
 void loop()
 {
   static unsigned long last_loop_time = 0;
   unsigned long loop_time = millis();
-  if (loop_time - last_loop_time > m_refresh_time_ms)
+  if (loop_time - last_loop_time > Config::m_refresh_time_ms)
   {
     // auto now = m_rtc.now();
-    auto now = DateTime(2022, 5, 5, 12, 40, 0);
+    auto now = DateTime(2022, 5, 5, 20, 50, 0);
 
     Serial.print("Now: ");
     print_time(now);
@@ -295,14 +312,8 @@ void loop()
 
     set_sun_rgb(minutes);
 
-    if (actual_day_part == Day_part::before_noon || actual_day_part == Day_part::after_noon)
-    {
-      move_servo(minutes);
-    }
+    move_servo(minutes);
 
-    if (actual_day_part == Day_part::sunrise || actual_day_part == Day_part::sunset)
-    {
-      set_sky_rgb(minutes);
-    }
+    set_sky_rgb(minutes);
   }
 }
