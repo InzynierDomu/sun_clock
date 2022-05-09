@@ -293,8 +293,7 @@ void loop()
   unsigned long loop_time = millis();
   if (loop_time - last_loop_time > Config::m_refresh_time_ms)
   {
-    // auto now = m_rtc.now();
-    auto now = DateTime(2022, 5, 5, 14, 50, 0);
+    auto now = m_rtc.now();
 
     Serial.print("Now: ");
     print_time(now);
