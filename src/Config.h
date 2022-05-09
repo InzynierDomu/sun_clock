@@ -1,4 +1,8 @@
+#pragma once
+
 #include <stdint.h>
+
+#include "Color.h"
 
 namespace Config
 {
@@ -14,4 +18,8 @@ const uint8_t max_servo_pos = 180;
 const double latitude = 51.1078852;
 const double longitude = 17.0385376;
 const int8_t dst_offset = 2;
+
+const Color horizon_sun (27, 2, 0);
+const Color noon (255, 220, 0);
+const Color blue_sky(0, 0, 12);
 } // namespace Config

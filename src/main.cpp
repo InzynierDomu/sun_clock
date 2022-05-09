@@ -2,19 +2,13 @@
 #include "Config.h"
 #include "RTClib.h"
 #include "sunset.h"
+#include "Color.h"
 
 #include <Arduino.h>
 #include <Servo.h>
 #include <Wire.h>
 #include <math.h>
 #include <stdint.h>
-
-enum class Colors
-{
-  red,
-  green,
-  blue
-};
 
 enum class Day_part
 {
@@ -23,25 +17,6 @@ enum class Day_part
   before_noon,
   after_noon,
   sunset
-};
-
-struct Color
-{
-  Color(uint8_t _r = 0, uint8_t _g = 0, uint8_t _b = 0)
-  : r(_r)
-  , g(_g)
-  , b(_b)
-  {}
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-  uint32_t get_color() const
-  {
-    uint32_t color = b;
-    color += g << 8;
-    color += r << 16;
-    return color;
-  }
 };
 
 struct Point
@@ -117,9 +92,9 @@ void calculate_sunrise_sunset()
 
   sun_position.night = Point(0, Color());
   sun_position.sunrise_civil = Point(sunrise_civil, Color());
-  sun_position.sunrise = Point(sunrise, Color(27, 2, 0));
-  sun_position.noon = Point(day_middle, Color(255, 220, 0));
-  sun_position.sunset = Point(sunset, Color(27, 2, 0));
+  sun_position.sunrise = Point(sunrise, Config::horizon_sun);     //todo: move const color to config
+  sun_position.noon = Point(day_middle, Config::noon);
+  sun_position.sunset = Point(sunset, Config::horizon_sun);
   sun_position.sunset_civil = Point(sunset_civil, Color());
 }
 
@@ -139,9 +114,7 @@ void move_servo(uint16_t now)
 
 void set_sky_rgb(uint16_t now)
 {
-  const Color m_sky_blue = Color(0, 0, 12);
-  uint32_t color = m_sky_blue.get_color();
-  m_ws_leds.fill(color);
+  m_ws_leds.fill(Config::blue_sky.get_color());
   m_ws_leds.show();
 }
 
