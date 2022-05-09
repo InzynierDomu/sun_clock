@@ -119,7 +119,8 @@ void move_servo(uint16_t now)
   Serial.println(servo_position);
 
   m_servo.write(servo_position);
-  // m_servo.detach();
+  delay(300); // todo: ugly fix
+  m_servo.detach();
 }
 
 uint16_t sin_fun(float x, float max)
@@ -293,7 +294,7 @@ void loop()
   if (loop_time - last_loop_time > Config::m_refresh_time_ms)
   {
     // auto now = m_rtc.now();
-    auto now = DateTime(2022, 5, 5, 20, 50, 0);
+    auto now = DateTime(2022, 5, 5, 14, 50, 0);
 
     Serial.print("Now: ");
     print_time(now);
