@@ -270,15 +270,11 @@ void setup()
     Serial.println("Couldn't find RTC");
   }
 
-  if (!m_rtc.isrunning())
-  {
-    Serial.println("RTC is NOT running, let's set the time!");
-  }
-
   m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
   sun.setPosition(Config::latitude, Config::longitude, Config::dst_offset);
-  sun.setCurrentDate(2022, 5, 5);
+  auto now = m_rtc.now();
+  sun.setCurrentDate(now.year(), now.month(), now.day());
 
   pinMode(Config::pin_led_r, OUTPUT);
   pinMode(Config::pin_led_g, OUTPUT);
