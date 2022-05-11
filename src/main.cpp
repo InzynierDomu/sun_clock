@@ -1,3 +1,11 @@
+/**
+ * @file main.cpp
+ * @brief clock tracking the position and color of the sun and sky
+ * @author by Szymon Markiewicz
+ * @details http://www.inzynierdomu.pl/
+ * @date 05-2022
+ */
+
 #include "Adafruit_NeoPixel.h"
 #include "Color.h"
 #include "Config.h"
@@ -133,12 +141,21 @@ Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
   Color color;
   if (is_rising)
   {
-    auto y = map(now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.b);
+    auto y = map(
+        now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.b); // todo: create generic function for color
     color.b = sin_fun(y, Config::blue_sky.b);
+    y = map(now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.g);
+    color.g = sin_fun(y, Config::blue_sky.g);
+    y = map(now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.r);
+    color.r = sin_fun(y, Config::blue_sky.r);
     return color;
   }
-  auto y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, 0, Config::blue_sky.b);
+  auto y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, Config::blue_sky.b, 0);
   color.b = sin_fun(y, Config::blue_sky.b);
+  y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, Config::blue_sky.g, 0);
+  color.g = sin_fun(y, Config::blue_sky.g);
+  y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, Config::blue_sky.r, 0);
+  color.r = sin_fun(y, Config::blue_sky.r);
   return color;
 }
 

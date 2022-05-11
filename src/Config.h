@@ -23,5 +23,5 @@ const int8_t dst_offset = 2;
 
 const Color horizon_sun(27, 4, 0);
 const Color noon(255, 200, 0);
-const Color blue_sky(0, 0, 12);
+const Color blue_sky(0, 5, 12);
 } // namespace Config
