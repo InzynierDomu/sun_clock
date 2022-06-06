@@ -50,13 +50,12 @@ struct Sun_position
 const uint8_t m_min_in_h = 60;
 
 Sun_position sun_position;
-
 Day_part actual_day_part;
 
 RTC_DS1307 m_rtc; ///< DS1307 RTC
-SunSet sun;
-Servo m_servo;
-Adafruit_NeoPixel m_ws_leds(Config::led_ws_count, Config::led_ws, NEO_GRB + NEO_KHZ800);
+SunSet sun; ///< Sun position calculation
+Servo m_servo; ///< HW servo
+Adafruit_NeoPixel m_ws_leds(Config::led_ws_count, Config::led_ws, NEO_GRB + NEO_KHZ800); ///< WS2812 leds (sky)
 
 DateTime calculate_from_minutes(uint16_t total_min)
 {
@@ -300,6 +299,9 @@ void setup()
   m_ws_leds.begin();
 }
 
+/**
+ * @brief main loop
+ */
 void loop()
 {
   static unsigned long last_loop_time = 0;

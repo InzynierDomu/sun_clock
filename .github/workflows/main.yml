@@ -30,7 +30,6 @@ jobs:
         uses: egor-tensin/setup-gcc@v1
         with:
           version: latest
-          platform: x64
 
       - name: Install lib sunset
         run: pio lib -g install buelowp/sunset@1.1.3

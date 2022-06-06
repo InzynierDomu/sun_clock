@@ -1,3 +1,11 @@
+/**
+ * @file Config.h
+ * @brief Configuration
+ * @author by Szymon Markiewicz
+ * @details http://www.inzynierdomu.pl/
+ * @date 05-2022
+ */
+
 #pragma once
 
 #include "Color.h"
