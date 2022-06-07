@@ -31,8 +31,6 @@ jobs:
         with:
           version: latest
 
-      - name: Install lib sunset
-        run: pio lib -g install buelowp/sunset@1.1.3
       - name: Install lib adafruit RTClib
         run: pio lib -g install https://github.com/adafruit/RTClib/archive/refs/tags/2.0.3.zip
       - name: Install lib Adafruit NeoPixel
