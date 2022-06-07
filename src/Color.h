@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+///< colors
 enum class Colors
 {
   red,
@@ -24,9 +25,13 @@ struct Color
   , g(_g)
   , b(_b)
   {}
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
+  uint8_t r; ///< red saturation
+  uint8_t g; ///< green saturation
+  uint8_t b; ///< blue saturation
+  /**
+   * @brief Get the color object
+   * @return uint32_t
+   */
   uint32_t get_color() const
   {
     uint32_t color = b;

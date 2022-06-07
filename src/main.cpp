@@ -18,6 +18,7 @@
 #include <math.h>
 #include <stdint.h>
 
+///< day part
 enum class Day_part
 {
   night,
@@ -34,8 +35,8 @@ struct Point
   : time(_time)
   , color(_color)
   {}
-  uint16_t time;
-  Color color;
+  uint16_t time; ///< time in minutes from 0:00
+  Color color; ///< color
 };
 
 struct Sun_position
@@ -47,16 +48,21 @@ struct Sun_position
   Point sunset_civil;
 };
 
-const uint8_t m_min_in_h = 60;
+const uint8_t m_min_in_h = 60; ///< minutes in hour
 
-Sun_position sun_position;
-Day_part actual_day_part;
+Sun_position sun_position; ///< characteristic points for the sun on sky
+Day_part actual_day_part; ///< current day part
 
 RTC_DS1307 m_rtc; ///< DS1307 RTC
 SunSet sun; ///< Sun position calculation
 Servo m_servo; ///< HW servo
 Adafruit_NeoPixel m_ws_leds(Config::led_ws_count, Config::led_ws, NEO_GRB + NEO_KHZ800); ///< WS2812 leds (sky)
 
+/**
+ * @brief calculate minutes form 0:00 to hour and minutes
+ * @param total_min: minutes form 0:00
+ * @return DateTime calculated time
+ */
 DateTime calculate_from_minutes(uint16_t total_min)
 {
   auto minutes = total_min % m_min_in_h;
@@ -64,6 +70,10 @@ DateTime calculate_from_minutes(uint16_t total_min)
   return DateTime(1970, 1, 1, houres, minutes);
 }
 
+/**
+ * @brief print time on Serial hh:mm:ss
+ * @param time: time to print
+ */
 void print_time(DateTime time)
 {
   Serial.print(time.hour(), DEC);
@@ -73,6 +83,9 @@ void print_time(DateTime time)
   Serial.println(time.second(), DEC);
 }
 
+/**
+ * @brief calculate sunrise and sunset times
+ */
 void calculate_sunrise_sunset()
 {
   uint16_t sunrise = static_cast<uint16_t>(sun.calcSunrise());
@@ -99,11 +112,20 @@ void calculate_sunrise_sunset()
   sun_position.sunset_civil = Point(sunset_civil, Color());
 }
 
+/**
+ * @brief calculate minutes form 0:00
+ * @param time: time to calculate
+ * @return uint16_t calculated minutes
+ */
 uint16_t calculate_from_datetime(DateTime time)
 {
   return (time.hour() * 60) + time.minute();
 }
 
+/**
+ * @brief move servo to angle depending to time
+ * @param now: time in minutes from 0:00
+ */
 void move_servo(uint16_t now)
 {
   m_servo.attach(Config::pin_servo);
@@ -130,11 +152,23 @@ void move_servo(uint16_t now)
   m_servo.detach();
 }
 
+/**
+ * @brief calculate regarding sin sunftion, color more linear for eye
+ * @param x: value for calculation
+ * @param max: maximum value for the output
+ * @return uint16_t return value from calculation
+ */
 uint16_t sin_fun(float x, float max)
 {
   return max * (sin(((x - max) * M_PI) / (max * 2))) + max;
 }
 
+/**
+ * @brief Get the sky horizon rgb object
+ * @param now: time in minutes from 0:00
+ * @param is_rising: true = before sunrise; false = after sunset
+ * @return Color sky color
+ */
 Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
 {
   Color color;
@@ -158,6 +192,10 @@ Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
   return color;
 }
 
+/**
+ * @brief Set the sky rgb object
+ * @param now: time in minutes from 0:00
+ */
 void set_sky_rgb(uint16_t now)
 {
   Color color;
@@ -183,6 +221,12 @@ void set_sky_rgb(uint16_t now)
   m_ws_leds.show();
 }
 
+/**
+ * @brief Get the sun horizon rgb object
+ * @param now: time in minutes from 0:00
+ * @param is_rising: true = before sunrise; false = after sunset
+ * @return Color sun color on specify position
+ */
 Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
 {
   Color color;
@@ -204,6 +248,12 @@ Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
   return color;
 }
 
+/**
+ * @brief Get the sun day rgb object
+ * @param now: time in minutes from 0:00
+ * @param is_afternoon: true = afternoon; false = before noon
+ * @return Color sun color on specify position
+ */
 Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
 {
   Color color;
@@ -218,6 +268,10 @@ Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
   return color;
 }
 
+/**
+ * @brief check current day part
+ * @param now: time in minutes from 0:00
+ */
 void check_day_part(uint16_t now)
 {
   if (now > sun_position.sunset_civil.time)
@@ -247,6 +301,10 @@ void check_day_part(uint16_t now)
   }
 }
 
+/**
+ * @brief Set the sun rgb object
+ * @param now: time in minutes from 0:00
+ */
 void set_sun_rgb(uint16_t now)
 {
   Color color;
