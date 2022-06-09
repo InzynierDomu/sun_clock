@@ -1,0 +1,330 @@
+\hypertarget{main_8cpp}{}\section{C\+:/\+Users/\+Omen/\+Documents/\+Platform\+I\+O/\+Projects/sun\+\_\+clock/src/main.cpp File Reference}
+\label{main_8cpp}\index{C\+:/\+Users/\+Omen/\+Documents/\+Platform\+I\+O/\+Projects/sun\+\_\+clock/src/main.\+cpp@{C\+:/\+Users/\+Omen/\+Documents/\+Platform\+I\+O/\+Projects/sun\+\_\+clock/src/main.\+cpp}}
+
+
+clock tracking the position and color of the sun and sky  
+
+
+{\ttfamily \#include \char`\"{}Adafruit\+\_\+\+Neo\+Pixel.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Color.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}R\+T\+Clib.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}sunset.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$Arduino.\+h$>$}\newline
+{\ttfamily \#include $<$Servo.\+h$>$}\newline
+{\ttfamily \#include $<$Wire.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_point}{Point}
+\item 
+struct \hyperlink{struct_sun__position}{Sun\+\_\+position}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8cpp_aac168192c1fd943e3e273105d4af47d8}\label{main_8cpp_aac168192c1fd943e3e273105d4af47d8}} 
+enum \hyperlink{main_8cpp_aac168192c1fd943e3e273105d4af47d8}{Day\+\_\+part} \{ \newline
+{\bfseries night}, 
+{\bfseries sunrise}, 
+{\bfseries before\+\_\+noon}, 
+{\bfseries after\+\_\+noon}, 
+\newline
+{\bfseries sunset}
+ \}\begin{DoxyCompactList}\small\item\em $<$ day part \end{DoxyCompactList}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8cpp_a47106fab64d3f9a7fc7342f4ca3bab23}\label{main_8cpp_a47106fab64d3f9a7fc7342f4ca3bab23}} 
+Adafruit\+\_\+\+Neo\+Pixel \hyperlink{main_8cpp_a47106fab64d3f9a7fc7342f4ca3bab23}{m\+\_\+ws\+\_\+leds} (Config\+::led\+\_\+ws\+\_\+count, Config\+::led\+\_\+ws, N\+E\+O\+\_\+\+G\+RB+N\+E\+O\+\_\+\+K\+H\+Z800)
+\begin{DoxyCompactList}\small\item\em W\+S2812 leds (sky) \end{DoxyCompactList}\item 
+Date\+Time \hyperlink{main_8cpp_a8848aab23a64c6bbdbf234dd51386cdd}{calculate\+\_\+from\+\_\+minutes} (uint16\+\_\+t total\+\_\+min)
+\begin{DoxyCompactList}\small\item\em calculate minutes form 0\+:00 to hour and minutes \end{DoxyCompactList}\item 
+void \hyperlink{main_8cpp_a2cef91bca13bbc4aab62ff0a73626619}{print\+\_\+time} (Date\+Time time)
+\begin{DoxyCompactList}\small\item\em print time on Serial hh\+:mm\+:ss \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_a04e0d9a9c53465e331a924d8387b1f0c}\label{main_8cpp_a04e0d9a9c53465e331a924d8387b1f0c}} 
+void \hyperlink{main_8cpp_a04e0d9a9c53465e331a924d8387b1f0c}{calculate\+\_\+sunrise\+\_\+sunset} ()
+\begin{DoxyCompactList}\small\item\em calculate sunrise and sunset times \end{DoxyCompactList}\item 
+uint16\+\_\+t \hyperlink{main_8cpp_a9ccdbe352f6efa4ae86826cdff959a24}{calculate\+\_\+from\+\_\+datetime} (Date\+Time time)
+\begin{DoxyCompactList}\small\item\em calculate minutes form 0\+:00 \end{DoxyCompactList}\item 
+void \hyperlink{main_8cpp_a80bcc4ed8c5a168c4bdd6df0bdaf6e73}{move\+\_\+servo} (uint16\+\_\+t now)
+\begin{DoxyCompactList}\small\item\em move servo to angle depending to time \end{DoxyCompactList}\item 
+uint16\+\_\+t \hyperlink{main_8cpp_af39f77df9549147c28a44292174fa998}{sin\+\_\+fun} (float x, float max)
+\begin{DoxyCompactList}\small\item\em calculate regarding sin sunftion, color more linear for eye \end{DoxyCompactList}\item 
+\hyperlink{struct_color}{Color} \hyperlink{main_8cpp_a90a316bd4499d8f2f9518e8230fc9670}{map\+\_\+on\+\_\+function} (uint16\+\_\+t now, \hyperlink{struct_point}{Point} min\+\_\+time, \hyperlink{struct_point}{Point} max\+\_\+time, \hyperlink{struct_color}{Color} min\+\_\+color, \hyperlink{struct_color}{Color} max\+\_\+color, bool is\+\_\+rising)
+\begin{DoxyCompactList}\small\item\em fit parameters to mathematical function \end{DoxyCompactList}\item 
+\hyperlink{struct_color}{Color} \hyperlink{main_8cpp_aae714356413aa3101e6c3de543af2867}{get\+\_\+sky\+\_\+horizon\+\_\+rgb} (uint16\+\_\+t now, bool is\+\_\+rising)
+\begin{DoxyCompactList}\small\item\em Get the sky horizon rgb. \end{DoxyCompactList}\item 
+void \hyperlink{main_8cpp_a8fd4d606001ddb5a0d31719ebb11aba8}{set\+\_\+sky\+\_\+rgb} (uint16\+\_\+t now)
+\begin{DoxyCompactList}\small\item\em Set the sky rgb. \end{DoxyCompactList}\item 
+\hyperlink{struct_color}{Color} \hyperlink{main_8cpp_a119e31a707dca3de8339342062b6aeb5}{get\+\_\+sun\+\_\+horizon\+\_\+rgb} (uint16\+\_\+t now, bool is\+\_\+rising)
+\begin{DoxyCompactList}\small\item\em Get the sun horizon rgb. \end{DoxyCompactList}\item 
+\hyperlink{struct_color}{Color} \hyperlink{main_8cpp_a71acf09ebb9076732170613640b4ace8}{get\+\_\+sun\+\_\+day\+\_\+rgb} (uint16\+\_\+t now, bool is\+\_\+afternoon)
+\begin{DoxyCompactList}\small\item\em Get the sun day rgb. \end{DoxyCompactList}\item 
+void \hyperlink{main_8cpp_a51013570016698ec6e21ccae4362c0a5}{check\+\_\+day\+\_\+part} (uint16\+\_\+t now)
+\begin{DoxyCompactList}\small\item\em check current day part \end{DoxyCompactList}\item 
+void \hyperlink{main_8cpp_ac73255530b10334f814e2a5b2e9f6afd}{set\+\_\+sun\+\_\+rgb} (uint16\+\_\+t now)
+\begin{DoxyCompactList}\small\item\em Set the sun rgb object. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_a4fc01d736fe50cf5b977f755b675f11d}\label{main_8cpp_a4fc01d736fe50cf5b977f755b675f11d}} 
+void \hyperlink{main_8cpp_a4fc01d736fe50cf5b977f755b675f11d}{setup} ()
+\begin{DoxyCompactList}\small\item\em setup \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_afe461d27b9c48d5921c00d521181f12f}\label{main_8cpp_afe461d27b9c48d5921c00d521181f12f}} 
+void \hyperlink{main_8cpp_afe461d27b9c48d5921c00d521181f12f}{loop} ()
+\begin{DoxyCompactList}\small\item\em main loop \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8cpp_a6cb59867cbc18aeb5df3914c37f6b7ce}\label{main_8cpp_a6cb59867cbc18aeb5df3914c37f6b7ce}} 
+const uint8\+\_\+t \hyperlink{main_8cpp_a6cb59867cbc18aeb5df3914c37f6b7ce}{m\+\_\+min\+\_\+in\+\_\+h} = 60
+\begin{DoxyCompactList}\small\item\em minutes in hour \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_a52609ac0b9d01668f2c13d29c0c2e7e6}\label{main_8cpp_a52609ac0b9d01668f2c13d29c0c2e7e6}} 
+\hyperlink{struct_sun__position}{Sun\+\_\+position} \hyperlink{main_8cpp_a52609ac0b9d01668f2c13d29c0c2e7e6}{sun\+\_\+position}
+\begin{DoxyCompactList}\small\item\em characteristic points for the sun on sky \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_a62c79e1f58d5f1fc40bfe47c2f7deb8c}\label{main_8cpp_a62c79e1f58d5f1fc40bfe47c2f7deb8c}} 
+\hyperlink{main_8cpp_aac168192c1fd943e3e273105d4af47d8}{Day\+\_\+part} \hyperlink{main_8cpp_a62c79e1f58d5f1fc40bfe47c2f7deb8c}{actual\+\_\+day\+\_\+part}
+\begin{DoxyCompactList}\small\item\em current day part \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_a41413814e92a82e273687da3abb86d55}\label{main_8cpp_a41413814e92a82e273687da3abb86d55}} 
+R\+T\+C\+\_\+\+D\+S1307 \hyperlink{main_8cpp_a41413814e92a82e273687da3abb86d55}{m\+\_\+rtc}
+\begin{DoxyCompactList}\small\item\em D\+S1307 R\+TC. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_a2c320502e60d13869ac70963a5354e62}\label{main_8cpp_a2c320502e60d13869ac70963a5354e62}} 
+Sun\+Set \hyperlink{main_8cpp_a2c320502e60d13869ac70963a5354e62}{sun}
+\begin{DoxyCompactList}\small\item\em Sun position calculation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{main_8cpp_a63d7a380721f9232cecef58d16f6f359}\label{main_8cpp_a63d7a380721f9232cecef58d16f6f359}} 
+Servo \hyperlink{main_8cpp_a63d7a380721f9232cecef58d16f6f359}{m\+\_\+servo}
+\begin{DoxyCompactList}\small\item\em HW servo. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+clock tracking the position and color of the sun and sky 
+
+\begin{DoxyAuthor}{Author}
+by Szymon Markiewicz
+\end{DoxyAuthor}
+\href{http://www.inzynierdomu.pl/}{\tt http\+://www.\+inzynierdomu.\+pl/} \begin{DoxyDate}{Date}
+05-\/2022 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{main_8cpp_a9ccdbe352f6efa4ae86826cdff959a24}\label{main_8cpp_a9ccdbe352f6efa4ae86826cdff959a24}} 
+\index{main.\+cpp@{main.\+cpp}!calculate\+\_\+from\+\_\+datetime@{calculate\+\_\+from\+\_\+datetime}}
+\index{calculate\+\_\+from\+\_\+datetime@{calculate\+\_\+from\+\_\+datetime}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{calculate\+\_\+from\+\_\+datetime()}{calculate\_from\_datetime()}}
+{\footnotesize\ttfamily uint16\+\_\+t calculate\+\_\+from\+\_\+datetime (\begin{DoxyParamCaption}\item[{Date\+Time}]{time }\end{DoxyParamCaption})}
+
+
+
+calculate minutes form 0\+:00 
+
+
+\begin{DoxyParams}{Parameters}
+{\em time} & time to calculate \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+uint16\+\_\+t calculated minutes 
+\end{DoxyReturn}
+\mbox{\Hypertarget{main_8cpp_a8848aab23a64c6bbdbf234dd51386cdd}\label{main_8cpp_a8848aab23a64c6bbdbf234dd51386cdd}} 
+\index{main.\+cpp@{main.\+cpp}!calculate\+\_\+from\+\_\+minutes@{calculate\+\_\+from\+\_\+minutes}}
+\index{calculate\+\_\+from\+\_\+minutes@{calculate\+\_\+from\+\_\+minutes}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{calculate\+\_\+from\+\_\+minutes()}{calculate\_from\_minutes()}}
+{\footnotesize\ttfamily Date\+Time calculate\+\_\+from\+\_\+minutes (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{total\+\_\+min }\end{DoxyParamCaption})}
+
+
+
+calculate minutes form 0\+:00 to hour and minutes 
+
+
+\begin{DoxyParams}{Parameters}
+{\em total\+\_\+min} & minutes form 0\+:00 \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Date\+Time calculated time 
+\end{DoxyReturn}
+\mbox{\Hypertarget{main_8cpp_a51013570016698ec6e21ccae4362c0a5}\label{main_8cpp_a51013570016698ec6e21ccae4362c0a5}} 
+\index{main.\+cpp@{main.\+cpp}!check\+\_\+day\+\_\+part@{check\+\_\+day\+\_\+part}}
+\index{check\+\_\+day\+\_\+part@{check\+\_\+day\+\_\+part}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{check\+\_\+day\+\_\+part()}{check\_day\_part()}}
+{\footnotesize\ttfamily void check\+\_\+day\+\_\+part (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now }\end{DoxyParamCaption})}
+
+
+
+check current day part 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{main_8cpp_aae714356413aa3101e6c3de543af2867}\label{main_8cpp_aae714356413aa3101e6c3de543af2867}} 
+\index{main.\+cpp@{main.\+cpp}!get\+\_\+sky\+\_\+horizon\+\_\+rgb@{get\+\_\+sky\+\_\+horizon\+\_\+rgb}}
+\index{get\+\_\+sky\+\_\+horizon\+\_\+rgb@{get\+\_\+sky\+\_\+horizon\+\_\+rgb}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{get\+\_\+sky\+\_\+horizon\+\_\+rgb()}{get\_sky\_horizon\_rgb()}}
+{\footnotesize\ttfamily \hyperlink{struct_color}{Color} get\+\_\+sky\+\_\+horizon\+\_\+rgb (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now,  }\item[{bool}]{is\+\_\+rising }\end{DoxyParamCaption})}
+
+
+
+Get the sky horizon rgb. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+{\em is\+\_\+rising} & true = before sunrise; false = after sunset \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\hyperlink{struct_color}{Color} sky color 
+\end{DoxyReturn}
+\mbox{\Hypertarget{main_8cpp_a71acf09ebb9076732170613640b4ace8}\label{main_8cpp_a71acf09ebb9076732170613640b4ace8}} 
+\index{main.\+cpp@{main.\+cpp}!get\+\_\+sun\+\_\+day\+\_\+rgb@{get\+\_\+sun\+\_\+day\+\_\+rgb}}
+\index{get\+\_\+sun\+\_\+day\+\_\+rgb@{get\+\_\+sun\+\_\+day\+\_\+rgb}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{get\+\_\+sun\+\_\+day\+\_\+rgb()}{get\_sun\_day\_rgb()}}
+{\footnotesize\ttfamily \hyperlink{struct_color}{Color} get\+\_\+sun\+\_\+day\+\_\+rgb (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now,  }\item[{bool}]{is\+\_\+afternoon }\end{DoxyParamCaption})}
+
+
+
+Get the sun day rgb. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+{\em is\+\_\+afternoon} & true = afternoon; false = before noon \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\hyperlink{struct_color}{Color} sun color on specify position 
+\end{DoxyReturn}
+\mbox{\Hypertarget{main_8cpp_a119e31a707dca3de8339342062b6aeb5}\label{main_8cpp_a119e31a707dca3de8339342062b6aeb5}} 
+\index{main.\+cpp@{main.\+cpp}!get\+\_\+sun\+\_\+horizon\+\_\+rgb@{get\+\_\+sun\+\_\+horizon\+\_\+rgb}}
+\index{get\+\_\+sun\+\_\+horizon\+\_\+rgb@{get\+\_\+sun\+\_\+horizon\+\_\+rgb}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{get\+\_\+sun\+\_\+horizon\+\_\+rgb()}{get\_sun\_horizon\_rgb()}}
+{\footnotesize\ttfamily \hyperlink{struct_color}{Color} get\+\_\+sun\+\_\+horizon\+\_\+rgb (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now,  }\item[{bool}]{is\+\_\+rising }\end{DoxyParamCaption})}
+
+
+
+Get the sun horizon rgb. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+{\em is\+\_\+rising} & true = before sunrise; false = after sunset \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\hyperlink{struct_color}{Color} sun color on specify position 
+\end{DoxyReturn}
+\mbox{\Hypertarget{main_8cpp_a90a316bd4499d8f2f9518e8230fc9670}\label{main_8cpp_a90a316bd4499d8f2f9518e8230fc9670}} 
+\index{main.\+cpp@{main.\+cpp}!map\+\_\+on\+\_\+function@{map\+\_\+on\+\_\+function}}
+\index{map\+\_\+on\+\_\+function@{map\+\_\+on\+\_\+function}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{map\+\_\+on\+\_\+function()}{map\_on\_function()}}
+{\footnotesize\ttfamily \hyperlink{struct_color}{Color} map\+\_\+on\+\_\+function (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now,  }\item[{\hyperlink{struct_point}{Point}}]{min\+\_\+time,  }\item[{\hyperlink{struct_point}{Point}}]{max\+\_\+time,  }\item[{\hyperlink{struct_color}{Color}}]{min\+\_\+color,  }\item[{\hyperlink{struct_color}{Color}}]{max\+\_\+color,  }\item[{bool}]{is\+\_\+rising }\end{DoxyParamCaption})}
+
+
+
+fit parameters to mathematical function 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+{\em min\+\_\+time} & minimal input time(now) \\
+\hline
+{\em max\+\_\+time} & maximum input time(now) \\
+\hline
+{\em min\+\_\+color} & minimal calor staurations to output \\
+\hline
+{\em max\+\_\+color} & maximum calor staurations to output \\
+\hline
+{\em is\+\_\+rising} & function direction \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\hyperlink{struct_color}{Color} output from mathematical function 
+\end{DoxyReturn}
+\mbox{\Hypertarget{main_8cpp_a80bcc4ed8c5a168c4bdd6df0bdaf6e73}\label{main_8cpp_a80bcc4ed8c5a168c4bdd6df0bdaf6e73}} 
+\index{main.\+cpp@{main.\+cpp}!move\+\_\+servo@{move\+\_\+servo}}
+\index{move\+\_\+servo@{move\+\_\+servo}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{move\+\_\+servo()}{move\_servo()}}
+{\footnotesize\ttfamily void move\+\_\+servo (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now }\end{DoxyParamCaption})}
+
+
+
+move servo to angle depending to time 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{main_8cpp_a2cef91bca13bbc4aab62ff0a73626619}\label{main_8cpp_a2cef91bca13bbc4aab62ff0a73626619}} 
+\index{main.\+cpp@{main.\+cpp}!print\+\_\+time@{print\+\_\+time}}
+\index{print\+\_\+time@{print\+\_\+time}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{print\+\_\+time()}{print\_time()}}
+{\footnotesize\ttfamily void print\+\_\+time (\begin{DoxyParamCaption}\item[{Date\+Time}]{time }\end{DoxyParamCaption})}
+
+
+
+print time on Serial hh\+:mm\+:ss 
+
+
+\begin{DoxyParams}{Parameters}
+{\em time} & time to print \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{main_8cpp_a8fd4d606001ddb5a0d31719ebb11aba8}\label{main_8cpp_a8fd4d606001ddb5a0d31719ebb11aba8}} 
+\index{main.\+cpp@{main.\+cpp}!set\+\_\+sky\+\_\+rgb@{set\+\_\+sky\+\_\+rgb}}
+\index{set\+\_\+sky\+\_\+rgb@{set\+\_\+sky\+\_\+rgb}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{set\+\_\+sky\+\_\+rgb()}{set\_sky\_rgb()}}
+{\footnotesize\ttfamily void set\+\_\+sky\+\_\+rgb (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now }\end{DoxyParamCaption})}
+
+
+
+Set the sky rgb. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{main_8cpp_ac73255530b10334f814e2a5b2e9f6afd}\label{main_8cpp_ac73255530b10334f814e2a5b2e9f6afd}} 
+\index{main.\+cpp@{main.\+cpp}!set\+\_\+sun\+\_\+rgb@{set\+\_\+sun\+\_\+rgb}}
+\index{set\+\_\+sun\+\_\+rgb@{set\+\_\+sun\+\_\+rgb}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{set\+\_\+sun\+\_\+rgb()}{set\_sun\_rgb()}}
+{\footnotesize\ttfamily void set\+\_\+sun\+\_\+rgb (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{now }\end{DoxyParamCaption})}
+
+
+
+Set the sun rgb object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em now} & time in minutes from 0\+:00 \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{main_8cpp_af39f77df9549147c28a44292174fa998}\label{main_8cpp_af39f77df9549147c28a44292174fa998}} 
+\index{main.\+cpp@{main.\+cpp}!sin\+\_\+fun@{sin\+\_\+fun}}
+\index{sin\+\_\+fun@{sin\+\_\+fun}!main.\+cpp@{main.\+cpp}}
+\subsubsection{\texorpdfstring{sin\+\_\+fun()}{sin\_fun()}}
+{\footnotesize\ttfamily uint16\+\_\+t sin\+\_\+fun (\begin{DoxyParamCaption}\item[{float}]{x,  }\item[{float}]{max }\end{DoxyParamCaption})}
+
+
+
+calculate regarding sin sunftion, color more linear for eye 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & value for calculation \\
+\hline
+{\em max} & maximum value for the output \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+uint16\+\_\+t return value from calculation 
+\end{DoxyReturn}
