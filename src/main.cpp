@@ -148,7 +148,7 @@ void move_servo(uint16_t now)
   Serial.println(servo_position);
 
   m_servo.write(servo_position);
-  delay(300); // todo: ugly fix
+  delay(300);
   m_servo.detach();
 }
 
@@ -164,36 +164,57 @@ uint16_t sin_fun(float x, float max)
 }
 
 /**
- * @brief Get the sky horizon rgb object
+ * @brief fit parameters to mathematical function
+ * @param now: time in minutes from 0:00
+ * @param min_time: minimal input time(now)
+ * @param max_time: maximum input time(now)
+ * @param min_color: minimal calor staurations to output
+ * @param max_color: maximum calor staurations to output
+ * @param is_rising: function direction
+ * @return Color output from mathematical function
+ */
+Color map_on_function(uint16_t now, Point min_time, Point max_time, Color min_color, Color max_color, bool is_rising)
+{
+  Color retval;
+  Color max_fun_color;
+
+  if (is_rising)
+  {
+    max_fun_color = max_color;
+  }
+  else
+  {
+    max_fun_color = min_color;
+  }
+
+  auto y = map(now, min_time.time, max_time.time, min_color.r, max_color.r);
+  retval.r = sin_fun(y, max_fun_color.r);
+  y = map(now, min_time.time, max_time.time, min_color.g, max_color.g);
+  retval.g = sin_fun(y, max_fun_color.g);
+  y = map(now, min_time.time, max_time.time, min_color.b, max_color.b);
+  retval.b = sin_fun(y, max_fun_color.b);
+
+  return retval;
+}
+
+/**
+ * @brief Get the sky horizon rgb
  * @param now: time in minutes from 0:00
  * @param is_rising: true = before sunrise; false = after sunset
  * @return Color sky color
  */
 Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
 {
-  Color color;
+  Color night;
   if (is_rising)
   {
-    auto y = map(
-        now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.b); // todo: create generic function for color
-    color.b = sin_fun(y, Config::blue_sky.b);
-    y = map(now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.g);
-    color.g = sin_fun(y, Config::blue_sky.g);
-    y = map(now, sun_position.sunrise_civil.time, sun_position.sunrise.time, 0, Config::blue_sky.r);
-    color.r = sin_fun(y, Config::blue_sky.r);
-    return color;
+    return map_on_function(now, sun_position.sunrise_civil, sun_position.sunrise, night, Config::blue_sky.b, is_rising);
   }
-  auto y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, Config::blue_sky.b, 0);
-  color.b = sin_fun(y, Config::blue_sky.b);
-  y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, Config::blue_sky.g, 0);
-  color.g = sin_fun(y, Config::blue_sky.g);
-  y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, Config::blue_sky.r, 0);
-  color.r = sin_fun(y, Config::blue_sky.r);
-  return color;
+  return map_on_function(now, sun_position.sunset, sun_position.sunset_civil, Config::blue_sky.b, night, is_rising);
 }
 
 /**
- * @brief Set the sky rgb object
+ * @brief Set the sky rgb
  * @param now: time in minutes from 0:00
  */
 void set_sky_rgb(uint16_t now)
@@ -222,34 +243,25 @@ void set_sky_rgb(uint16_t now)
 }
 
 /**
- * @brief Get the sun horizon rgb object
+ * @brief Get the sun horizon rgb
  * @param now: time in minutes from 0:00
  * @param is_rising: true = before sunrise; false = after sunset
  * @return Color sun color on specify position
  */
 Color get_sun_horizon_rgb(uint16_t now, bool is_rising)
 {
-  Color color;
+  // Color color;
   if (is_rising)
   {
-    auto y = map(
-        now, sun_position.sunrise_civil.time, sun_position.sunrise.time, sun_position.sunrise_civil.color.r, sun_position.sunrise.color.r);
-    color.r = sin_fun(y, sun_position.sunrise.color.r);
-    y = map(
-        now, sun_position.sunrise_civil.time, sun_position.sunrise.time, sun_position.sunrise_civil.color.g, sun_position.sunrise.color.g);
-    color.g = sin_fun(y, sun_position.sunrise.color.g);
-    return color;
+    return map_on_function(
+        now, sun_position.sunrise_civil, sun_position.sunrise, sun_position.sunrise_civil.color, sun_position.sunrise.color, is_rising);
   }
-  auto y =
-      map(now, sun_position.sunset.time, sun_position.sunset_civil.time, sun_position.sunset.color.r, sun_position.sunset_civil.color.r);
-  color.r = sin_fun(y, sun_position.sunset.color.r);
-  y = map(now, sun_position.sunset.time, sun_position.sunset_civil.time, sun_position.sunset.color.g, sun_position.sunset_civil.color.g);
-  color.g = sin_fun(y, sun_position.sunset.color.g);
-  return color;
+  return map_on_function(
+      now, sun_position.sunset, sun_position.sunset_civil, sun_position.sunset.color, sun_position.sunset_civil.color, is_rising);
 }
 
 /**
- * @brief Get the sun day rgb object
+ * @brief Get the sun day rgb
  * @param now: time in minutes from 0:00
  * @param is_afternoon: true = afternoon; false = before noon
  * @return Color sun color on specify position
