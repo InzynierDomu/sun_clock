@@ -208,9 +208,9 @@ Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
   Color night;
   if (is_rising)
   {
-    return map_on_function(now, sun_position.sunrise_civil, sun_position.sunrise, night, Config::blue_sky.b, is_rising);
+    return map_on_function(now, sun_position.sunrise_civil, sun_position.sunrise, night, Config::blue_sky, is_rising);
   }
-  return map_on_function(now, sun_position.sunset, sun_position.sunset_civil, Config::blue_sky.b, night, is_rising);
+  return map_on_function(now, sun_position.sunset, sun_position.sunset_civil, Config::blue_sky, night, is_rising);
 }
 
 /**
