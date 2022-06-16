@@ -1,7 +1,5 @@
 # Sun_clock
 
-Clock simulating the movement of the sun
-
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/InzynierDomu/sun_clock/CI?logo=github&style=flat-square)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/InzynierDomu/sun_clock?style=flat-square)
 <a href="https://inzynierdomu.github.io/sun_clock/">![GitHub docs deployments](https://img.shields.io/github/deployments/InzynierDomu/sun_clock/github-pages?label=docs&logo=BookStack&logoColor=white&style=flat-square)</a>
@@ -9,17 +7,29 @@ Clock simulating the movement of the sun
 ![GitHub](https://img.shields.io/github/license/InzynierDomu/LED_tester?style=flat-square)
 <a href="https://tipo.live/p/inzynierdomu">![support](https://img.shields.io/badge/support-tipo.live-yellow?style=flat-square)</a>
 
-- [About](#About)
-- [Scheme](#Scheme)
-- [IDE](#IDE)
+  - [About](#about)
+  - [Scheme](#scheme)
+  - [IDE](#ide)
 
 ## About
 
-Clock tracking the position and color of the sun and sky
+Clock tracking the position and color of the sun in the sky regarding date and location. Sun (RGB LED) changes position during the day using a servo. Sun and sky (WS2812) change color during the day.
 
 ## Scheme
 
 ![schem](https://github.com/InzynierDomu/sun_clock/blob/main/schem.png)
+
+Part list:
+- Arduino nano
+- Servo min. 180' 
+- RTC DS1307
+- LED RGB common anode
+- WS2812 10 pcs
+- Oscillator 32,788 KHz
+- Battery CR2025 3,3V with batbox
+- R 220 ohm 3 pcs
+- R 470 ohm 1 pcs
+- R 4,7k ohm 2 pcs
 
 ## IDE
 
