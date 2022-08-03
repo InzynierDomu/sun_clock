@@ -22,8 +22,10 @@ const uint8_t led_ws = 7; ///< pin for WS2812 LED
 const uint8_t led_ws_count = 10; ///< WS2812 LED count
 const uint8_t min_servo_pos = 0; ///< minimal servo position
 const uint8_t max_servo_pos = 180; ///< maximum servo position
+const uint16_t serial_baudrate = 9600; ///< serial baudrate
 
 const unsigned long m_refresh_time_ms = 30000; ///< refrishing time in main loop
+const uint16_t time_for_servo_move = 300; ///< time from set PWM to turn off
 
 const double latitude = 51.1078852; ///< latitude loaction
 const double longitude = 17.0385376; ///< longitude loaction

@@ -30,7 +30,9 @@ enum class Day_part
 
 struct Point
 {
-  Point() {}
+  Point()
+  : time(0)
+  {}
   Point(uint16_t _time, Color _color)
   : time(_time)
   , color(_color)
@@ -51,7 +53,6 @@ struct Sun_position
 const uint8_t m_min_in_h = 60; ///< minutes in hour
 
 Sun_position sun_position; ///< characteristic points for the sun on sky
-Day_part actual_day_part; ///< current day part
 
 RTC_DS1307 m_rtc; ///< DS1307 RTC
 SunSet sun; ///< Sun position calculation
@@ -119,36 +120,43 @@ void calculate_sunrise_sunset()
  */
 uint16_t calculate_from_datetime(DateTime time)
 {
-  return (time.hour() * 60) + time.minute();
+  return (time.hour() * m_min_in_h) + time.minute();
+}
+
+/**
+ * @brief calculate servo angle depending to time
+ * @param now: time in minutes from 0:00
+ */
+uint8_t calculate_servo_position(uint16_t now, const Day_part actual_day_part)
+{
+  if (actual_day_part == Day_part::sunset)
+  {
+    return Config::max_servo_pos;
+  }
+  else if (actual_day_part == Day_part::sunrise || actual_day_part == Day_part::night)
+  {
+    return Config::min_servo_pos;
+  }
+  else
+  {
+    return map(now, sun_position.sunrise.time, sun_position.sunset.time, Config::min_servo_pos, Config::max_servo_pos);
+  }
 }
 
 /**
  * @brief move servo to angle depending to time
  * @param now: time in minutes from 0:00
  */
-void move_servo(uint16_t now)
+void move_servo(uint16_t now, const Day_part actual_day_part)
 {
   m_servo.attach(Config::pin_servo);
-  uint8_t servo_position;
-
-  if (actual_day_part == Day_part::sunset)
-  {
-    servo_position = Config::max_servo_pos;
-  }
-  else if (actual_day_part == Day_part::sunrise || actual_day_part == Day_part::night)
-  {
-    servo_position = Config::min_servo_pos;
-  }
-  else
-  {
-    servo_position = map(now, sun_position.sunrise.time, sun_position.sunset.time, Config::min_servo_pos, Config::max_servo_pos);
-  }
+  uint8_t servo_position = calculate_servo_position(now, actual_day_part);
 
   Serial.print("servo pos: ");
   Serial.println(servo_position);
 
   m_servo.write(servo_position);
-  delay(300);
+  delay(Config::time_for_servo_move);
   m_servo.detach();
 }
 
@@ -217,7 +225,7 @@ Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
  * @brief Set the sky rgb
  * @param now: time in minutes from 0:00
  */
-void set_sky_rgb(uint16_t now)
+void set_sky_rgb(uint16_t now, const Day_part actual_day_part)
 {
   Color color;
 
@@ -284,32 +292,31 @@ Color get_sun_day_rgb(uint16_t now, bool is_afternoon)
  * @brief check current day part
  * @param now: time in minutes from 0:00
  */
-void check_day_part(uint16_t now)
+Day_part check_day_part(uint16_t now)
 {
   if (now > sun_position.sunset_civil.time)
   {
-    Serial.println("faling to sunset");
-    actual_day_part = Day_part::night;
+    return Day_part::night;
   }
   else if (now > sun_position.sunset.time)
   {
-    actual_day_part = Day_part::sunset;
+    return Day_part::sunset;
   }
   else if (now > sun_position.noon.time)
   {
-    actual_day_part = Day_part::after_noon;
+    return Day_part::after_noon;
   }
   else if (now > sun_position.sunrise.time)
   {
-    actual_day_part = Day_part::before_noon;
+    return Day_part::before_noon;
   }
   else if (now > sun_position.sunrise_civil.time)
   {
-    actual_day_part = Day_part::sunrise;
+    return Day_part::sunrise;
   }
   else
   {
-    actual_day_part = Day_part::night;
+    return Day_part::night;
   }
 }
 
@@ -317,7 +324,7 @@ void check_day_part(uint16_t now)
  * @brief Set the sun rgb object
  * @param now: time in minutes from 0:00
  */
-void set_sun_rgb(uint16_t now)
+void set_sun_rgb(uint16_t now, const Day_part actual_day_part)
 {
   Color color;
 
@@ -349,7 +356,7 @@ void set_sun_rgb(uint16_t now)
  */
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(Config::serial_baudrate);
 
   if (!m_rtc.begin())
   {
@@ -393,12 +400,12 @@ void loop()
       is_calculated = true;
     }
 
-    check_day_part(minutes);
+    Day_part actual_day_part = check_day_part(minutes);
 
-    set_sun_rgb(minutes);
+    set_sun_rgb(minutes, actual_day_part);
 
-    move_servo(minutes);
+    move_servo(minutes, actual_day_part);
 
-    set_sky_rgb(minutes);
+    set_sky_rgb(minutes, actual_day_part);
   }
 }
