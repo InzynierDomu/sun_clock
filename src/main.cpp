@@ -126,6 +126,7 @@ uint16_t calculate_from_datetime(DateTime time)
 /**
  * @brief calculate servo angle depending to time
  * @param now: time in minutes from 0:00
+ * @param actual_day_part: what part of day (sun on sky) is now
  */
 uint8_t calculate_servo_position(uint16_t now, const Day_part actual_day_part)
 {
@@ -146,6 +147,7 @@ uint8_t calculate_servo_position(uint16_t now, const Day_part actual_day_part)
 /**
  * @brief move servo to angle depending to time
  * @param now: time in minutes from 0:00
+ * @param actual_day_part: what part of day (sun on sky) is now
  */
 void move_servo(uint16_t now, const Day_part actual_day_part)
 {
@@ -166,9 +168,9 @@ void move_servo(uint16_t now, const Day_part actual_day_part)
  * @param max: maximum value for the output
  * @return uint16_t return value from calculation
  */
-uint16_t sin_fun(float x, float max)
+uint16_t sin_fun(long x, uint8_t max)
 {
-  return max * (sin(((x - max) * M_PI) / (max * 2))) + max;
+  return double(max) * (sin((double(x - max) * M_PI) / double(max * 2))) + double(max);
 }
 
 /**
@@ -224,6 +226,7 @@ Color get_sky_horizon_rgb(uint16_t now, bool is_rising)
 /**
  * @brief Set the sky rgb
  * @param now: time in minutes from 0:00
+ * @param actual_day_part: what part of day (sun on sky) is now
  */
 void set_sky_rgb(uint16_t now, const Day_part actual_day_part)
 {
@@ -323,6 +326,7 @@ Day_part check_day_part(uint16_t now)
 /**
  * @brief Set the sun rgb object
  * @param now: time in minutes from 0:00
+ * @param actual_day_part: what part of day (sun on sky) is now
  */
 void set_sun_rgb(uint16_t now, const Day_part actual_day_part)
 {
