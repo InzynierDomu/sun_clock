@@ -28,6 +28,7 @@ struct Color
   uint8_t r; ///< red saturation
   uint8_t g; ///< green saturation
   uint8_t b; ///< blue saturation
+
   /**
    * @brief Get the color object
    * @return uint32_t
@@ -38,5 +39,17 @@ struct Color
     color += g << 8;
     color += r << 16;
     return color;
+  }
+
+  void print_color() const
+  {
+    Serial.print("color:");
+    Serial.print(get_color());
+    Serial.print(" r:");
+    Serial.print(r);
+    Serial.print(" g:");
+    Serial.print(g);
+    Serial.print(" b:");
+    Serial.println(b);
   }
 };

@@ -249,6 +249,10 @@ void set_sky_rgb(uint16_t now, const Day_part actual_day_part)
       break;
   }
 
+
+  Serial.println("sky color");
+  color.print_color();
+
   m_ws_leds.fill(color.get_color());
   m_ws_leds.show();
 }
@@ -350,6 +354,8 @@ void set_sun_rgb(uint16_t now, const Day_part actual_day_part)
       break;
   }
 
+  Serial.println("sun color");
+  color.print_color();
   analogWrite(Config::pin_led_r, color.r);
   analogWrite(Config::pin_led_g, color.g);
   analogWrite(Config::pin_led_b, color.b);
@@ -406,9 +412,9 @@ void loop()
 
     Day_part actual_day_part = check_day_part(minutes);
 
-    set_sun_rgb(minutes, actual_day_part);
-
     move_servo(minutes, actual_day_part);
+
+    set_sun_rgb(minutes, actual_day_part);
 
     set_sky_rgb(minutes, actual_day_part);
   }
