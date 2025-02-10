@@ -14,6 +14,8 @@
 
 ## About
 
+![schem](https://www.inzynierdomu.pl/wp-content/uploads/2022/12/IMG_6529-768x431.jpg)
+
 Clock tracking the position and color of the sun in the sky regarding date and location. Sun (RGB LED) changes position during the day using a servo. Sun and sky (WS2812) change color during the day.
 
 To set clock, clean projet and upload. Actual date and time uploaded from PC on building and uploading. 
