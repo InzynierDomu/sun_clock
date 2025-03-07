@@ -5,7 +5,6 @@
 <a href="https://inzynierdomu.github.io/sun_clock/">![GitHub docs deployments](https://img.shields.io/github/deployments/InzynierDomu/sun_clock/github-pages?label=docs&logo=BookStack&logoColor=white&style=flat-square)</a>
 <a href="https://discord.gg/KmW6mHdg">![Discord](https://img.shields.io/discord/815929748882587688?logo=discord&logoColor=green&style=flat-square)</a>
 ![GitHub](https://img.shields.io/github/license/InzynierDomu/sun_clock?style=flat-square)
-<a href="https://tipo.live/p/inzynierdomu">![support](https://img.shields.io/badge/support-tipo.live-yellow?style=flat-square)</a>
 
 - [Sun\_clock](#sun_clock)
   - [About](#about)
@@ -21,6 +20,12 @@ Clock tracking the position and color of the sun in the sky regarding date and l
 To set clock, clean projet and upload. Actual date and time uploaded from PC on building and uploading. 
 
 To set location, change latitude nad longitude in Config.h.
+
+<div align="center">
+<h2>Support</h2>
+
+<p>If any of my projects have helped you in your work, studies, or simply made your day better, you can buy me a coffee. <a href="https://buycoffee.to/inzynier-domu" target="_blank"><img src="https://buycoffee.to/img/share-button-primary.png" style="width: 195px; height: 51px" alt="Postaw mi kawę na buycoffee.to"></a></p>
+</div>
 
 ## Scheme
 
